@@ -53,6 +53,15 @@ except Exception:
     with open(SCALER_PATH, "rb") as f:
         scaler = pickle.load(f)
 
+# Warmup del modelo en arranque para que la primera petición no cause timeout
+try:
+    print("[*] Pre-calentando modelo Keras...", flush=True)
+    _dummy = np.zeros((1, len(features_list) or 9))
+    _ = modelo(scaler.transform(_dummy), training=False)
+    print("[+] Modelo pre-calentado exitosamente.", flush=True)
+except Exception as e:
+    print(f"[!] Aviso en warmup: {e}", flush=True)
+
 # Inicializar cliente de Groq
 groq_client = Groq(api_key=groq_api_key)
 
@@ -100,7 +109,7 @@ Recuerda: solo prosa natural, sin tablas, sin listas con viñetas ni líneas div
     ultimo_error = None
     for modelo_nombre in MODELOS_GROQ:
         try:
-            print(f"[*] Solicitando recomendación a Groq (Modelo: {modelo_nombre} - on_demand)...")
+            print(f"[*] Solicitando recomendación a Groq (Modelo: {modelo_nombre} - on_demand)...", flush=True)
             chat_completion = groq_client.chat.completions.create(
                 model=modelo_nombre,
                 service_tier="on_demand",
@@ -109,7 +118,8 @@ Recuerda: solo prosa natural, sin tablas, sin listas con viñetas ni líneas div
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.6,
-                max_tokens=600
+                max_tokens=600,
+                timeout=25.0
             )
             recomendacion = chat_completion.choices[0].message.content.strip()
 
@@ -129,7 +139,6 @@ Recuerda: solo prosa natural, sin tablas, sin listas con viñetas ni líneas div
             # Asegurar límite máximo de 400 palabras
             palabras = recomendacion.split()
             if len(palabras) > 400:
-                # Recortar en 400 palabras buscando el último punto
                 texto_recortado = " ".join(palabras[:400])
                 ultimo_punto = texto_recortado.rfind(".")
                 if ultimo_punto != -1 and ultimo_punto > 200:
@@ -137,14 +146,14 @@ Recuerda: solo prosa natural, sin tablas, sin listas con viñetas ni líneas div
                 else:
                     recomendacion = texto_recortado + "..."
 
-            print(f"[+] Recomendación generada con éxito ({len(recomendacion.split())} palabras, {len(recomendacion)} caracteres).")
+            print(f"[+] Recomendación generada con éxito ({len(recomendacion.split())} palabras, {len(recomendacion)} caracteres).", flush=True)
             return recomendacion, prompt_completo
 
         except Exception as err:
             ultimo_error = err
-            print(f"[!] Falló modelo '{modelo_nombre}': {err}. Intentando alternativa...")
+            print(f"[!] Falló modelo '{modelo_nombre}': {err}. Intentando alternativa...", flush=True)
 
-    print(f"[-] Todos los modelos de Groq fallaron. Último error: {ultimo_error}")
+    print(f"[-] Todos los modelos de Groq fallaron. Último error: {ultimo_error}", flush=True)
     fallback_recomendacion = (
         f"El modelo ha estimado una probabilidad de lesión del {porcentaje}% ({nivel_riesgo}). Como medida "
         "preventiva inmediata, te aconsejamos reducir la carga general de entrenamiento en un 25% durante los "
@@ -174,11 +183,12 @@ def index():
 
 @app.route("/predecir", methods=["POST"])
 def predecir():
+    print("\n--> 1. Iniciando predicción...", flush=True)
     try:
         datos_formulario = {}
         vector_entrada = []
 
-        # Extraer parámetros en el orden exacto esperado por el scaler y modelo
+        # Recoger datos del formulario
         for f in features_list:
             nombre = f["name"]
             valor_raw = request.form.get(nombre, f.get("default", 0.0))
@@ -186,21 +196,36 @@ def predecir():
             datos_formulario[nombre] = valor
             vector_entrada.append(valor)
 
-        # 1. Transformar datos con el scaler
+        print(f"--> Datos recogidos ({len(vector_entrada)} características). Escalar datos...", flush=True)
+
+        # Escalar datos con scaler.pkl
         matriz_entrada = np.array([vector_entrada])
         datos_escalados = scaler.transform(matriz_entrada)
 
         # 2. Inferencia con el modelo de Keras
-        prediccion_raw = modelo.predict(datos_escalados)
+        print("--> 2. Ejecutando modelo de Keras...", flush=True)
+        prediccion_raw = modelo(datos_escalados, training=False).numpy()
         probabilidad = float(prediccion_raw[0][0])
         porcentaje = round(probabilidad * 100, 2)
+        print(f"--> Modelo ejecutado con éxito! Probabilidad: {porcentaje}%", flush=True)
 
-        # 3. Clasificación según umbral y niveles
+        # Clasificación según umbral y niveles
         nivel = calcular_nivel_riesgo(probabilidad)
         clasificacion = "en riesgo" if probabilidad >= decision_threshold else "no en riesgo"
 
-        # 4. Generación de recomendación preventiva con Groq
-        recomendacion, prompt_original = generar_recomendacion_groq(datos_formulario, probabilidad, nivel)
+        # 3. Conectar con Groq
+        print("--> 3. Conectando con Groq...", flush=True)
+        try:
+            recomendacion, prompt_original = generar_recomendacion_groq(datos_formulario, probabilidad, nivel)
+            print("--> 4. Respuesta de Groq recibida con éxito!", flush=True)
+        except Exception as e:
+            print(f"--> ERROR en Groq: {e}", flush=True)
+            recomendacion = (
+                f"El modelo ha estimado un riesgo del {porcentaje}% ({nivel}). "
+                "Como medida preventiva inmediata, se aconseja reducir la intensidad de carga en un 25%, "
+                "priorizar movilidad articular activa y asegurar 8 horas de descanso reparador."
+            )
+            prompt_original = ""
 
         resultado = {
             "probabilidad": porcentaje,
@@ -227,6 +252,7 @@ def predecir():
         )
 
     except Exception as e:
+        print(f"--> ERROR GENERAL en /predecir: {e}", flush=True)
         return render_template(
             "form.html",
             features=features_list,
