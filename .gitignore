@@ -1,0 +1,27 @@
+# Variables de entorno y credenciales
+.env
+.env.local
+.env.*
+
+# Python y caché
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs de feedback y temporales
+feedback_logs.json
+*.log
+
+# Desarrollo y entrenamiento del modelo
+Crear_Modelo/
+[Cc]rear_[Mm]odelo/
+[Cc]rear [Mm]odelo/
+*.ipynb
+.ipynb_checkpoints/
+
+# Desarrollo y entrenamiento del modelo
+Crear_Modelo/
+[Cc]rear_[Mm]odelo/
+[Cc]rear [Mm]odelo/
+*.ipynb
+.ipynb_checkpoints/

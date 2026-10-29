@@ -1,0 +1,222 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #f0f4f8;
+  color: #1f2d3d;
+  padding: 2rem 1rem;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+
+.subtitle { color: #5a6b7b; margin-bottom: 1.5rem; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.field .unit { font-weight: 400; color: #7b8a99; }
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #c9d4de;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.field input:focus,
+.field select:focus {
+  outline: 2px solid #2f80ed;
+  border-color: transparent;
+}
+
+button[type="submit"] {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.8rem;
+  background: #2f80ed;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover { background: #1b5fc0; }
+
+#resultado { margin-top: 1.5rem; }
+
+.resultado {
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.resultado h2 { margin-bottom: 0.5rem; }
+
+.resultado .probabilidad { font-size: 2.4rem; font-weight: 700; margin: 0.3rem 0; }
+
+.resultado.bajo     { background: #e6f7e9; border: 2px solid #2e9e4f; }
+.resultado.moderado { background: #fff6e0; border: 2px solid #e0a42e; }
+.resultado.alto     { background: #fdeaea; border: 2px solid #d33f3f; }
+
+.error {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  background: #fdeaea;
+  border: 1px solid #d33f3f;
+  color: #a02727;
+  border-radius: 8px;
+}
+
+/* ========================================================
+   RECOMENDACIÓN LLM Y SISTEMA DE FEEDBACK (RLHF)
+   ======================================================== */
+.card-recomendacion-llm {
+  margin-top: 1.5rem;
+  background: #f8fafc;
+  border: 1px solid #c7d2fe;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.05);
+}
+
+.recomendacion-header {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.icono-ai {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.recomendacion-header h3 {
+  font-size: 1.15rem;
+  color: #1e293b;
+  margin-bottom: 0.2rem;
+}
+
+.subtitulo-ai {
+  font-size: 0.8rem;
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.recomendacion-body {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.2rem;
+  color: #334155;
+  line-height: 1.65;
+  font-size: 0.95rem;
+  white-space: pre-line;
+}
+
+.card-rlhf {
+  margin-top: 1rem;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.rlhf-comentario-box {
+  width: 100%;
+}
+
+.input-comentario {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-comentario:focus {
+  border-color: #6366f1;
+}
+
+.rlhf-info h4 {
+  font-size: 0.95rem;
+  color: #1e293b;
+  margin-bottom: 0.2rem;
+}
+
+.rlhf-info p {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin: 0;
+}
+
+.rlhf-acciones {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn-rlhf {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-rlhf:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.btn-positivo:hover {
+  color: #15803d;
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.btn-negativo:hover {
+  color: #b91c1c;
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.rlhf-mensaje {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #16a34a;
+}

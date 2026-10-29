@@ -1,0 +1,115 @@
+{
+  "n_features": 9,
+  "target": "injury_risk",
+  "target_values": {
+    "0": "no en riesgo",
+    "1": "en riesgo"
+  },
+  "decision_threshold": 0.58,
+  "risk_levels": [
+    {
+      "name": "Bajo",
+      "min": 0.0,
+      "max": 0.35
+    },
+    {
+      "name": "Moderado",
+      "min": 0.35,
+      "max": 0.57
+    },
+    {
+      "name": "Alto",
+      "min": 0.58,
+      "max": 1.0
+    }
+  ],
+  "ranges_note": "Rangos = min/max reales del dataset dataset.csv (1000 filas), redondeados hacia afuera. El modelo solo vio estos rangos; valores fuera son extrapolacion sin sentido. Varias columnas tienen rangos angulares (p. ej. ankle_rotation_angle con valores negativos entre -45° y 45°) e índices normalizados entre 0 y 1. Los 'default' son las medias del dataset: el formulario viene precargado con un deportista promedio.",
+  "dataset_stats": {
+    "rows": 1000,
+    "positive_class_rate": 0.051,
+    "note": "injury_risk=1 en el 5.10% de los casos (51 de 1000 filas, dataset desbalanceado)"
+  },
+  "features": [
+    {
+      "name": "hip_flexion_angle",
+      "label": "Ángulo de flexión de cadera",
+      "unit": "°",
+      "min": 20.0,
+      "max": 120.0,
+      "type": "number",
+      "default": 69.03
+    },
+    {
+      "name": "knee_flexion_angle",
+      "label": "Ángulo de flexión de rodilla",
+      "unit": "°",
+      "min": 30.0,
+      "max": 150.0,
+      "type": "number",
+      "default": 90.84
+    },
+    {
+      "name": "ankle_rotation_angle",
+      "label": "Ángulo de rotación de tobillo",
+      "unit": "°",
+      "min": -45.0,
+      "max": 45.0,
+      "type": "number",
+      "default": 0.22
+    },
+    {
+      "name": "angular_velocity",
+      "label": "Velocidad angular",
+      "unit": "rad/s",
+      "min": 0.5,
+      "max": 6.0,
+      "type": "number",
+      "default": 3.2
+    },
+    {
+      "name": "linear_acceleration",
+      "label": "Aceleración lineal",
+      "unit": "m/s²",
+      "min": 0.1,
+      "max": 15.0,
+      "type": "number",
+      "default": 7.46
+    },
+    {
+      "name": "ground_reaction_force",
+      "label": "Fuerza de reacción del suelo",
+      "unit": "N",
+      "min": 500.0,
+      "max": 3500.0,
+      "type": "number",
+      "default": 1995.39
+    },
+    {
+      "name": "postural_instability_index",
+      "label": "Índice de inestabilidad postural",
+      "unit": "norm.",
+      "min": 0.0,
+      "max": 1.0,
+      "type": "number",
+      "default": 0.49
+    },
+    {
+      "name": "biomechanical_deviation_score",
+      "label": "Puntuación de desviación biomecánica",
+      "unit": "norm.",
+      "min": 0.0,
+      "max": 1.0,
+      "type": "number",
+      "default": 0.48
+    },
+    {
+      "name": "fatigue_level",
+      "label": "Nivel de fatiga",
+      "unit": "norm.",
+      "min": 0.0,
+      "max": 1.0,
+      "type": "number",
+      "default": 0.49
+    }
+  ]
+}

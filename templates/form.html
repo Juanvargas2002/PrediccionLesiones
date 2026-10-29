@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predicción de Riesgo de Lesión Deportiva</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <h1>Predicción de Riesgo de Lesión Deportiva</h1>
+    <p class="subtitle">El formulario viene precargado con un <strong>deportista promedio</strong> (medias del dataset). Modificá solo los parámetros que quieras y calcular el riesgo.</p>
+
+    {% if error %}
+    <div class="error">⚠ {{ error }}</div>
+    {% endif %}
+
+    <form id="formAtleta" method="post" action="/predecir">
+      <div class="grid">
+        {% for f in features %}
+        <div class="field">
+          <label for="{{ f.name }}">{{ f.label }} <span class="unit">({{ f.unit }})</span></label>
+          {% if f.type == "select" %}
+            <select id="{{ f.name }}" name="{{ f.name }}" required>
+              {% for opt in f.options %}
+              <option value="{{ opt.value }}"
+                {% if valores %}
+                  {% if valores.get(f.name) == (opt.value | string) %}selected{% endif %}
+                {% elif f.default == opt.value %}selected{% endif %}>
+                {{ opt.label }}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input type="number" id="{{ f.name }}" name="{{ f.name }}"
+                   min="{{ f.min }}" max="{{ f.max }}"
+                   step="{% if f.type == 'integer' %}1{% else %}any{% endif %}"
+                   value="{{ valores.get(f.name) if valores else (f.default | string) }}" required>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      <button type="submit">Calcular riesgo</button>
+    </form>
+
+    {% if resultado %}
+    <div class="resultado {{ resultado.nivel | lower }}">
+      <h2>Resultado</h2>
+      <p class="probabilidad">{{ resultado.probabilidad }}%</p>
+      <p>Nivel de riesgo: <strong>{{ resultado.nivel }}</strong></p>
+      <p>Clasificación (umbral {{ resultado.umbral }}): <strong>{{ resultado.clasificacion }}</strong></p>
+    </div>
+
+    <!-- CUADRO DESTACADO: RECOMENDACIONES PREVENTIVAS DEL LLM (GROQ) -->
+    <div class="card-recomendacion-llm">
+      <div class="recomendacion-header">
+        <span class="icono-ai">🤖</span>
+        <div>
+          <h3>Recomendaciones Preventivas Especializadas</h3>
+          <span class="subtitulo-ai">Generadas por Groq LLM según tu perfil biomecánico</span>
+        </div>
+      </div>
+      <div class="recomendacion-body">
+        {{ resultado.recomendacion }}
+      </div>
+    </div>
+
+    <!-- SISTEMA DE FEEDBACK INTERACTIVO (RLHF) -->
+    <div class="card-rlhf" id="box-rlhf">
+      <div class="rlhf-info">
+        <h4>¿Te resultó útil y acertada esta recomendación?</h4>
+        <p>Tu valoración alimenta nuestro ciclo de Aprendizaje por Refuerzo con Retroalimentación Humana (RLHF).</p>
+      </div>
+
+      <div class="rlhf-comentario-box">
+        <input type="text" id="rlhf-comentario" placeholder="Comentario u observación sobre la recomendación (opcional)..." class="input-comentario">
+      </div>
+
+      <div class="rlhf-acciones" id="rlhf-botones">
+        <button type="button" class="btn-rlhf btn-positivo" onclick="enviarRLHF('positivo')">
+          👍 Útil y clara
+        </button>
+        <button type="button" class="btn-rlhf btn-negativo" onclick="enviarRLHF('negativo')">
+          👎 Imprecisa o genérica
+        </button>
+      </div>
+
+      <div id="rlhf-confirmacion" class="rlhf-mensaje" style="display: none;">
+        ✓ ¡Muchas gracias! Tu retroalimentación fue registrada en feedback_logs.json.
+      </div>
+    </div>
+
+    <!-- Contenedores seguros para datos del prompt y recomendación -->
+    <script id="prompt-original-json" type="application/json">
+      {{ (resultado.prompt_original | default('')) | tojson }}
+    </script>
+    <script id="respuesta-llm-json" type="application/json">
+      {{ (resultado.recomendacion | default('')) | tojson }}
+    </script>
+
+    <script>
+    async function enviarRLHF(calificacion) {
+      const promptOriginal = JSON.parse(document.getElementById('prompt-original-json').textContent);
+      const respuestaLLM = JSON.parse(document.getElementById('respuesta-llm-json').textContent);
+      const comentarioTexto = document.getElementById('rlhf-comentario') ? document.getElementById('rlhf-comentario').value : '';
+
+      const payload = {
+        calificacion: calificacion, // 'positivo', 'negativo' o valor numérico
+        comentario: comentarioTexto,
+        prompt_original: promptOriginal,
+        respuesta_llm: respuestaLLM,
+        probabilidad: {{ resultado.probabilidad | default(0) }},
+        nivel: "{{ resultado.nivel | default('') }}",
+        clasificacion: "{{ resultado.clasificacion | default('') }}"
+      };
+
+      try {
+        const response = await fetch('/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          document.getElementById('rlhf-botones').style.display = 'none';
+          if (document.getElementById('rlhf-comentario')) {
+            document.getElementById('rlhf-comentario').disabled = true;
+          }
+          document.getElementById('rlhf-confirmacion').style.display = 'block';
+        } else {
+          console.error('Error al registrar feedback en el servidor.');
+        }
+      } catch (err) {
+        console.error('Error de conexión al enviar feedback:', err);
+      }
+    }
+    </script>
+    {% endif %}
+    
+  </main>
+</body>
+</html>
