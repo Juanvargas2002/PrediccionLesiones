@@ -1,4 +1,10 @@
 import os
+
+# Optimizaciones de memoria para Render (Free Tier: 512MB RAM)
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+
 import json
 import pickle
 import joblib

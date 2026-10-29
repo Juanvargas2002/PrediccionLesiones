@@ -1,9 +1,8 @@
 flask
 gunicorn
-tensorflow
+tensorflow-cpu
 scikit-learn
 joblib
 numpy
-pandas
 groq
 python-dotenv
